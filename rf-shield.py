@@ -12,7 +12,6 @@ def dms_to_decimal(degrees, minutes, seconds):
     decimal_degrees = degrees + (minutes / 60) + (seconds / 3600)
     return decimal_degrees
 
-
 if __name__ == '__main__':
 
     tower_dataset = pd.read_csv(tower_dataset)
@@ -59,5 +58,11 @@ if __name__ == '__main__':
         tooltip = location
         folium.Marker([location.latitude, location.longitude], popup="Liberty Bell", tooltip=tooltip).add_to(mymap)
 
-        
+        # Add scatter plot markers to the map using the latitude and longitude from the DataFrame
+        for _, row in df.iterrows():
+            folium.CircleMarker(location=[row['LATITUDE'], row['LONGITUDE']],
+                                radius=5,  # Adjust the radius as needed
+                                color=row['Color'],
+                                fill=True).add_to(mymap)
+
         
