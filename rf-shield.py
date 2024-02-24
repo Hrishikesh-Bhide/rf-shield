@@ -7,6 +7,12 @@ from geopy.geocoders import Nominatim
 from resources.constants import tower_dataset
 from folium.plugins import Draw
 
+
+def dms_to_decimal(degrees, minutes, seconds):
+    decimal_degrees = degrees + (minutes / 60) + (seconds / 3600)
+    return decimal_degrees
+
+
 if __name__ == '__main__':
 
     tower_dataset = pd.read_csv(tower_dataset)
@@ -42,4 +48,16 @@ if __name__ == '__main__':
 
         find_house_safety = st.button("Check Your Home Safety")
 
-    
+    if find_house_safety == True:
+        geolocator = Nominatim(user_agent="my_streamlit_app")
+        location = geolocator.geocode(src)
+        st.write("Your Address: " + str(location))
+
+        mymap = folium.Map(location=[location.latitude, location.longitude])
+
+        # add marker for Liberty Bell
+        tooltip = location
+        folium.Marker([location.latitude, location.longitude], popup="Liberty Bell", tooltip=tooltip).add_to(mymap)
+
+        
+        
