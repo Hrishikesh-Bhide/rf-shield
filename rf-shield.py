@@ -12,6 +12,19 @@ def dms_to_decimal(degrees, minutes, seconds):
     decimal_degrees = degrees + (minutes / 60) + (seconds / 3600)
     return decimal_degrees
 
+
+def is_point_inside_circle(point_lat, point_lon, circle_lat, circle_lon, radius):
+    # Calculate the distance between the point and the center of the circle
+    distance = geodesic((point_lat, point_lon), (circle_lat, circle_lon)).meters
+    # st.write(distance)
+    # st.write(radius)
+    # st.write(point_lat)
+    # st.write(point_lon)
+    # st.write("--------")
+    # Check if the distance is less than or equal to the radius
+    return distance <= radius
+
+
 if __name__ == '__main__':
 
     tower_dataset = pd.read_csv(tower_dataset)
@@ -65,4 +78,27 @@ if __name__ == '__main__':
                                 color=row['Color'],
                                 fill=True).add_to(mymap)
 
-        
+        radius = 400
+        folium.Circle(
+            location=[location.latitude, location.longitude],
+            radius=radius,
+            color="blue",
+            fill=True,
+            fill_color='blue',
+            fill_opacity=0.2
+        ).add_to(mymap)
+        folium_static(mymap)
+
+        radius_color = "blue"
+        flag = False
+
+        for row in combined_coordinates:
+            is_inside = is_point_inside_circle(location.latitude, location.longitude, row[0], row[1], radius)
+            if is_inside == True:
+                st.write("This Area Is Not Safe")
+                flag = True
+                radius_color = "red"
+                break
+            Draw(export=True).add_to(mymap)
+        if flag == False:
+            st.write("This is Safe Area")
