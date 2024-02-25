@@ -6,12 +6,7 @@ import folium
 from geopy.geocoders import Nominatim
 from resources.constants import tower_dataset, logo_path
 from folium.plugins import Draw
-
-
-def dms_to_decimal(degrees, minutes, seconds):
-    decimal_degrees = degrees + (minutes / 60) + (seconds / 3600)
-    return decimal_degrees
-
+import db
 
 def is_point_inside_circle(point_lat, point_lon, circle_lat, circle_lon, radius):
     # Calculate the distance between the point and the center of the circle
@@ -20,30 +15,20 @@ def is_point_inside_circle(point_lat, point_lon, circle_lat, circle_lon, radius)
 
 
 if __name__ == '__main__':
+    conn_str = 'postgresql://postgres:ZTcdErRGGp7THlrW@org-zenith-inst-rf-shield.data-1.use1.tembo.io:5432/postgres'
+    conn = db.connect_to_database(conn_str)
+    if conn:
+        tower_data = []
+        try:
+            cur = conn.cursor()
+            #db.create_tables(cur, conn)
+            #db.insert_data(cur, conn)
+            tower_data = db.get_tower_data_from_database(cur)
+            cur.close()
+            conn.close()
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
-    tower_dataset = pd.read_csv(tower_dataset)
-    lats = tower_dataset['LAT_DMS']
-    lngs = tower_dataset['LON_DMS']
-    lat_decimal = []
-    lng_decimal = []
-    for lat in lats:
-        lat_arr = lat.split(",")
-        latitude_decimal = dms_to_decimal(int(lat_arr[0]), int(lat_arr[1]), int(lat_arr[2]))
-        lat_decimal.append(latitude_decimal)
-
-    for lng in lngs:
-        lng_arr = lng.split(",")
-        longitude_decimal = dms_to_decimal(int(lng_arr[0]), int(lng_arr[1]), int(lng_arr[2]))
-        lng_decimal.append(longitude_decimal)
-
-    combined_coordinates = []
-    color = []
-    for lat, lng in zip(lat_decimal, lng_decimal):
-        combined_coordinates.append((lat, -lng))
-        color.append('#FF0000')
-
-    df = pd.DataFrame(combined_coordinates, columns=["LATITUDE", "LONGITUDE"])
-    df['Color'] = color
 
     with st.sidebar:
         st.markdown("<h1 style='text-align: center; color: blue;font-size: 30px;'>RF Shield</h1>",
@@ -61,19 +46,20 @@ if __name__ == '__main__':
         flag = False
         radius_color = "blue"
         radius = 400
-        for row in combined_coordinates:
+        for row in tower_data:
             is_inside = is_point_inside_circle(location.latitude, location.longitude, row[0], row[1], radius)
             if is_inside == True:
                 flag = True
                 radius_color = "red"
                 break
 
-
         mymap1 = folium.Map(location=[location.latitude, location.longitude])
 
         # add marker for Liberty Bell
         tooltip = location
         folium.Marker([location.latitude, location.longitude], popup="Liberty Bell", tooltip=tooltip).add_to(mymap1)
+
+        df = pd.DataFrame(tower_data, columns=["LATITUDE", "LONGITUDE", "Color"])
 
         # Add scatter plot markers to the map using the latitude and longitude from the DataFrame
         for _, row in df.iterrows():
@@ -110,7 +96,7 @@ if __name__ == '__main__':
 
         folium_static(mymap1)
         if flag == False:
-            st.markdown("<h3 style='text-align: center;'>This is Safe Area</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: green; font-size: 24px;'>This is Safe Area</h3>", unsafe_allow_html=True)
         else:
-            st.markdown("<h3 style='text-align: center;'>This is not Safe Area</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: red; font-size: 24px;'>This is not Safe Area</h3>", unsafe_allow_html=True)
         folium_static(mymap)
