@@ -4,7 +4,7 @@ from geopy.distance import geodesic
 from streamlit_folium import folium_static
 import folium
 from geopy.geocoders import Nominatim
-from resources.constants import tower_dataset
+from resources.constants import tower_dataset, logo_path
 from folium.plugins import Draw
 
 
@@ -52,20 +52,30 @@ if __name__ == '__main__':
     df['Color'] = color
 
     with st.sidebar:
-        st.markdown("<h1 style='text-align: center; color: blue;font-size: 30px;'>Safe House</h1>",
+        st.markdown("<h1 style='text-align: center; color: blue;font-size: 30px;'>RF Shield</h1>",
                     unsafe_allow_html=True)
-        # st.image(logo_path, width=250)
+        st.image(logo_path, width=250)
         # Centered image with custom CSS
-        src = st.text_input("Enter Hourse Address To Check Safety")
+        src = st.text_input("**Enter Address To Check Safety**")
 
-        find_house_safety = st.button("Check Your Home Safety")
+        find_house_safety = st.button("**Check Your Safety**")
 
     if find_house_safety == True:
         geolocator = Nominatim(user_agent="my_streamlit_app")
         location = geolocator.geocode(src)
-        st.write("Your Address: " + str(location))
+        st.subheader(str(location))
 
-        mymap = folium.Map(location=[location.latitude, location.longitude])
+        flag = False
+        radius_color = "blue"
+        radius = 400
+        for row in combined_coordinates:
+            is_inside = is_point_inside_circle(location.latitude, location.longitude, row[0], row[1], radius)
+            if is_inside == True:
+                flag = True
+                radius_color = "red"
+                break
+
+        mymap = folium.Map(location=[location.latitude, location.longitude], zoom_start=15)
 
         # add marker for Liberty Bell
         tooltip = location
@@ -82,23 +92,14 @@ if __name__ == '__main__':
         folium.Circle(
             location=[location.latitude, location.longitude],
             radius=radius,
-            color="blue",
+            color=radius_color,
             fill=True,
             fill_color='blue',
             fill_opacity=0.2
         ).add_to(mymap)
         folium_static(mymap)
 
-        radius_color = "blue"
-        flag = False
-
-        for row in combined_coordinates:
-            is_inside = is_point_inside_circle(location.latitude, location.longitude, row[0], row[1], radius)
-            if is_inside == True:
-                st.write("This Area Is Not Safe")
-                flag = True
-                radius_color = "red"
-                break
-            Draw(export=True).add_to(mymap)
         if flag == False:
-            st.write("This is Safe Area")
+            st.markdown("<h3 style='text-align: center;'>This is Safe Area</h3>", unsafe_allow_html=True)
+        else:
+            st.markdown("<h3 style='text-align: center;'>This is not Safe Area</h3>", unsafe_allow_html=True)
