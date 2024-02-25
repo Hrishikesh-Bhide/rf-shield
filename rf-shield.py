@@ -16,12 +16,6 @@ def dms_to_decimal(degrees, minutes, seconds):
 def is_point_inside_circle(point_lat, point_lon, circle_lat, circle_lon, radius):
     # Calculate the distance between the point and the center of the circle
     distance = geodesic((point_lat, point_lon), (circle_lat, circle_lon)).meters
-    # st.write(distance)
-    # st.write(radius)
-    # st.write(point_lat)
-    # st.write(point_lon)
-    # st.write("--------")
-    # Check if the distance is less than or equal to the radius
     return distance <= radius
 
 
@@ -55,7 +49,6 @@ if __name__ == '__main__':
         st.markdown("<h1 style='text-align: center; color: blue;font-size: 30px;'>RF Shield</h1>",
                     unsafe_allow_html=True)
         st.image(logo_path, width=250)
-        # Centered image with custom CSS
         src = st.text_input("**Enter Address To Check Safety**")
 
         find_house_safety = st.button("**Check Your Safety**")
@@ -74,6 +67,22 @@ if __name__ == '__main__':
                 flag = True
                 radius_color = "red"
                 break
+
+
+        mymap1 = folium.Map(location=[location.latitude, location.longitude])
+
+        # add marker for Liberty Bell
+        tooltip = location
+        folium.Marker([location.latitude, location.longitude], popup="Liberty Bell", tooltip=tooltip).add_to(mymap1)
+
+        # Add scatter plot markers to the map using the latitude and longitude from the DataFrame
+        for _, row in df.iterrows():
+            folium.CircleMarker(location=[row['LATITUDE'], row['LONGITUDE']],
+                                radius=5,  # Adjust the radius as needed
+                                color=row['Color'],
+                                fill=True).add_to(mymap1)
+        # folium_static(mymap1)
+
 
         mymap = folium.Map(location=[location.latitude, location.longitude], zoom_start=15)
 
@@ -97,9 +106,11 @@ if __name__ == '__main__':
             fill_color='blue',
             fill_opacity=0.2
         ).add_to(mymap)
-        folium_static(mymap)
+        # folium_static(mymap)
 
+        folium_static(mymap1)
         if flag == False:
             st.markdown("<h3 style='text-align: center;'>This is Safe Area</h3>", unsafe_allow_html=True)
         else:
             st.markdown("<h3 style='text-align: center;'>This is not Safe Area</h3>", unsafe_allow_html=True)
+        folium_static(mymap)
