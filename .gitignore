@@ -4,3 +4,9 @@
 # Ignore Python byte-compiled files
 __pycache__/
 
+# Ignore terraform
+infra/
+
+# Ignore keys
+keys/
+
