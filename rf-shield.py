@@ -96,7 +96,9 @@ if __name__ == '__main__':
 
         folium_static(mymap1)
         if flag == False:
-            st.markdown("<h3 style='text-align: center; color: green; font-size: 24px;'>This is Safe Area</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: green; font-size: 24px;'>RF-Shielded Area</h3>",
+                        unsafe_allow_html=True)
         else:
-            st.markdown("<h3 style='text-align: center; color: red; font-size: 24px;'>This is not Safe Area</h3>", unsafe_allow_html=True)
+            st.markdown("<h3 style='text-align: center; color: red; font-size: 24px;'>RF-Exposed Area</h3>",
+                        unsafe_allow_html=True)
         folium_static(mymap)
