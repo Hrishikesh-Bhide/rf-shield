@@ -1,5 +1,3 @@
-# rf-shield
-
 # RF Shield
 
 RF Shield is a project developed with the aim of empowering individuals to make informed decisions about their living environment concerning potential health risks associated with RF radiation exposure from nearby communication towers. The project offers various functionalities, including identifying RF-Shielded and RF-Exposed areas, displaying cellular tower locations on maps, providing news updates on relevant issues, and more.
